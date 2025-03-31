@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -7,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import {
   Tabs,
   TabsContent,
@@ -15,39 +15,10 @@ import {
 } from "@/components/ui/tabs";
 import Layout from '../components/Layout';
 
-interface EssayAnalysisResult {
-  text: string;
-  corrections: {
-    original: string;
-    suggested: string;
-    type: 'spelling' | 'grammar' | 'style';
-    position: {
-      start: number;
-      end: number;
-    };
-  }[];
-  score: {
-    total: number;
-    categories: {
-      grammar: number;
-      coherence: number;
-      cohesion: number;
-      adherenceToTheme: number;
-      argumentQuality: number;
-    };
-  };
-  feedback: string;
-}
-
-interface LocationState {
-  preview: string;
-  analysisResult: EssayAnalysisResult;
-}
-
 const ReviewPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const state = location.state as LocationState;
+  const state = location.state || {};
   
   const [studentName, setStudentName] = useState('');
   const [studentNumber, setStudentNumber] = useState('');
@@ -57,7 +28,7 @@ const ReviewPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   // Verifica se temos os dados necessários
-  if (!state || !state.preview || !state.analysisResult) {
+  if (!state || !state.analysisResult) {
     return (
       <Layout>
         <div className="py-20 text-center">
@@ -73,7 +44,7 @@ const ReviewPage = () => {
     );
   }
   
-  const { preview, analysisResult } = state;
+  const { preview, essayText, analysisResult, inputType = 'image' } = state;
   
   const handleSave = async () => {
     if (!studentName || !studentClass) {
@@ -100,6 +71,7 @@ const ReviewPage = () => {
           grade,
           comments,
         },
+        inputType,
         timestamp: new Date().toISOString(),
       };
       
@@ -131,18 +103,25 @@ const ReviewPage = () => {
                 <CardContent className="p-6">
                   <div className="mb-4">
                     <h2 className="text-xl font-bold mb-2">Redação Original</h2>
-                    <div className="border rounded-lg overflow-hidden">
-                      <img 
-                        src={preview} 
-                        alt="Redação original" 
-                        className="w-full object-contain max-h-[400px]"
-                      />
-                    </div>
+                    
+                    {inputType === 'image' ? (
+                      <div className="border rounded-lg overflow-hidden">
+                        <img 
+                          src={preview} 
+                          alt="Redação original" 
+                          className="w-full object-contain max-h-[400px]"
+                        />
+                      </div>
+                    ) : (
+                      <div className="border rounded-lg p-4 bg-gray-50 max-h-[400px] overflow-y-auto">
+                        <p className="whitespace-pre-wrap">{essayText}</p>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="space-y-6 mt-8">
                     <div>
-                      <h3 className="font-medium mb-2">Texto Extraído</h3>
+                      <h3 className="font-medium mb-2">Texto {inputType === 'image' ? 'Extraído' : 'Inserido'}</h3>
                       <div className="p-4 bg-gray-50 rounded-lg text-sm">
                         {analysisResult.text}
                       </div>
@@ -165,46 +144,61 @@ const ReviewPage = () => {
                       <div>
                         <h2 className="text-xl font-bold mb-4">Correções Sugeridas</h2>
                         <div className="space-y-2">
-                          {analysisResult.corrections.map((correction, index) => (
-                            <div key={index} className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                              <p className="text-sm">
-                                <span className="font-medium">Original:</span> {correction.original}
-                              </p>
-                              <p className="text-sm text-emerald-600">
-                                <span className="font-medium">Sugestão:</span> {correction.suggested}
-                              </p>
-                              <p className="text-xs text-gray-500 mt-1">
-                                Tipo: {correction.type === 'spelling' ? 'Ortografia' : 
-                                      correction.type === 'grammar' ? 'Gramática' : 'Estilo'}
+                          {analysisResult.corrections.length > 0 ? (
+                            analysisResult.corrections.map((correction, index) => (
+                              <div key={index} className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                <p className="text-sm">
+                                  <span className="font-medium">Original:</span> {correction.original}
+                                </p>
+                                <p className="text-sm text-emerald-600">
+                                  <span className="font-medium">Sugestão:</span> {correction.suggested}
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Tipo: {correction.type === 'spelling' ? 'Ortografia' : 
+                                        correction.type === 'grammar' ? 'Gramática' : 'Estilo'}
+                                </p>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                              <p className="text-sm text-green-600">
+                                Nenhuma correção necessária. O texto está bem escrito.
                               </p>
                             </div>
-                          ))}
+                          )}
                         </div>
                       </div>
                       
                       <div>
                         <h2 className="text-xl font-bold mb-4">Pontuação por Categoria</h2>
                         <div className="grid grid-cols-2 gap-4">
-                          {Object.entries(analysisResult.score.categories).map(([category, score]) => (
-                            <div key={category} className="p-3 bg-gray-50 rounded-lg">
-                              <p className="text-sm font-medium mb-1">
-                                {category === 'grammar' ? 'Gramática' :
-                                 category === 'coherence' ? 'Coerência' :
-                                 category === 'cohesion' ? 'Coesão' :
-                                 category === 'adherenceToTheme' ? 'Aderência ao Tema' :
-                                 'Qualidade da Argumentação'}
-                              </p>
-                              <div className="flex items-center">
-                                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                  <div 
-                                    className="bg-sesi-red h-2.5 rounded-full" 
-                                    style={{ width: `${(score / 10) * 100}%` }}
-                                  ></div>
+                          {Object.entries(analysisResult.score.categories).map(([category, score]) => {
+                            // Corrigindo o problema: verificar se score existe primeiro
+                            let numericScore = 0;
+                            if (score !== undefined && score !== null) {
+                              numericScore = typeof score === 'number' ? score : parseFloat(String(score)) || 0;
+                            }
+                            // Calcular porcentagem (0-10 → 0-100%)
+                            const percentage = (numericScore / 10) * 100;
+                            
+                            return (
+                              <div key={category} className="p-3 bg-gray-50 rounded-lg">
+                                <p className="text-sm font-medium mb-1">
+                                  {category === 'grammar' ? 'Gramática' :
+                                   category === 'coherence' ? 'Coerência' :
+                                   category === 'cohesion' ? 'Coesão' :
+                                   category === 'adherenceToTheme' ? 'Aderência ao Tema' :
+                                   'Qualidade da Argumentação'}
+                                </p>
+                                <div className="flex items-center">
+                                  <Progress value={percentage} className="h-2 flex-1 mr-2" />
+                                  <span className="text-sm font-medium">
+                                    {numericScore.toFixed(1)}
+                                  </span>
                                 </div>
-                                <span className="ml-2 text-sm font-medium">{score.toFixed(1)}</span>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                         
                         <div className="mt-4 p-4 bg-sesi-red/10 rounded-lg">

@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User, LogOut } from 'lucide-react';
+import imgHeader from '../assets/logoFooter.webp';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -38,9 +39,8 @@ const Navbar = () => {
       }`}
     >
       <div className="container mx-auto flex items-center justify-between">
-        <Link to="/" className="flex items-center space-x-2 text-sesi-red">
-          <div className="text-xl md:text-4xl font-bold">SESI</div>
-          <div className="text-sm md:text-md font-medium text-sesi-dark/80 ">Sorocaba</div>
+        <Link to="/" className="">
+        <img className='w-64' src={imgHeader} alt="" />
         </Link>
         
         <div className="hidden md:flex items-center space-x-8">
