@@ -14,11 +14,19 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import Layout from '../components/Layout';
+import { saveResults, ResultData, AnalysisResult } from '../services/aiService';
+
+interface LocationState {
+  preview?: string;
+  essayText?: string;
+  analysisResult: AnalysisResult;
+  inputType: 'image' | 'text';
+}
 
 const ReviewPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const state = location.state || {};
+  const state = location.state as LocationState | undefined;
   
   const [studentName, setStudentName] = useState('');
   const [studentNumber, setStudentNumber] = useState('');
@@ -27,7 +35,6 @@ const ReviewPage = () => {
   const [comments, setComments] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  // Verifica se temos os dados necessários
   if (!state || !state.analysisResult) {
     return (
       <Layout>
@@ -55,12 +62,7 @@ const ReviewPage = () => {
     setIsLoading(true);
     
     try {
-      // Aqui você integraria com uma API para salvar os dados
-      // Simulando o envio para uma API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Dados que seriam enviados para a API
-      const resultData = {
+      const resultData: ResultData = {
         studentInfo: {
           name: studentName,
           number: studentNumber,
@@ -75,11 +77,18 @@ const ReviewPage = () => {
         timestamp: new Date().toISOString(),
       };
       
-      console.log('Dados a serem salvos:', resultData);
+      console.log('Enviando dados para salvamento:', resultData);
       
-      toast.success('Resultado salvo com sucesso!');
-      navigate('/results');
+      const result = await saveResults(resultData);
+      
+      if (result.success) {
+        toast.success(result.message || 'Resultado salvo com sucesso!');
+        navigate('/results');
+      } else {
+        toast.error(result.message || 'Erro ao salvar os resultados.');
+      }
     } catch (error) {
+      console.error('Erro ao salvar:', error);
       toast.error('Erro ao salvar os resultados. Tente novamente.');
     } finally {
       setIsLoading(false);
@@ -173,12 +182,10 @@ const ReviewPage = () => {
                         <h2 className="text-xl font-bold mb-4">Pontuação por Categoria</h2>
                         <div className="grid grid-cols-2 gap-4">
                           {Object.entries(analysisResult.score.categories).map(([category, score]) => {
-                            // Corrigindo o problema: verificar se score existe primeiro
                             let numericScore = 0;
                             if (score !== undefined && score !== null) {
                               numericScore = typeof score === 'number' ? score : parseFloat(String(score)) || 0;
                             }
-                            // Calcular porcentagem (0-10 → 0-100%)
                             const percentage = (numericScore / 10) * 100;
                             
                             return (

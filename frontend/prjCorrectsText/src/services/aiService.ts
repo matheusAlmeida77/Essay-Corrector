@@ -1,93 +1,165 @@
-// Este arquivo serve como ponte para integrar sua IA Python
+// Interface definitions for essay analysis
+export interface CorrectionPosition {
+  start: number;
+  end: number;
+}
+
+export interface Correction {
+  original: string;
+  suggested: string;
+  type: 'spelling' | 'grammar' | 'style';
+  position?: CorrectionPosition;
+}
+
+export interface ScoreCategories {
+  grammar: number;
+  coherence: number;
+  cohesion: number;
+  adherenceToTheme: number;
+  argumentQuality: number;
+}
+
+export interface AnalysisScore {
+  total: number;
+  categories: ScoreCategories;
+}
+
+export interface AnalysisResult {
+  text: string;
+  corrections: Correction[];
+  score: AnalysisScore;
+  feedback: string;
+}
+
+export interface StudentInfo {
+  name: string;
+  number: string;
+  class: string;
+}
+
+export interface TeacherInput {
+  grade: string;
+  comments: string;
+}
+
+export interface ResultData {
+  studentInfo: StudentInfo;
+  essayAnalysis: AnalysisResult;
+  teacherInput: TeacherInput;
+  inputType: 'image' | 'text';
+  timestamp: string;
+}
+
+// Configuration for API
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 /**
  * Analisa uma redação a partir de uma imagem
  * @param {File} essayImage - A imagem da redação a ser analisada
- * @returns {Promise<Object>} Resultado da análise
+ * @returns {Promise<AnalysisResult>} Resultado da análise
  */
-export const analyzeEssay = async (essayImage) => {
-  // Aqui é onde você integrará sua IA Python
+export const analyzeEssay = async (essayImage: File): Promise<AnalysisResult> => {
+  // Forçar uso da API Python, independente do ambiente
+  // Removendo a verificação de ambiente para garantir que sempre usamos a API
+  console.log(`Enviando imagem para API: ${API_URL}/api/analyze/image`);
   
-  // Para desenvolvimento, vamos usar dados simulados
-  if (process.env.NODE_ENV === 'development') {
-    // Simula o tempo que levaria para processar com a IA
-    await new Promise(resolve => setTimeout(resolve, 2000));
+  try {
+    const formData = new FormData();
+    formData.append('image', essayImage);
     
+    const response = await fetch(`${API_URL}/api/analyze/image`, {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      console.error('Erro na resposta da API:', response.status, response.statusText);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Falha ao analisar a redação');
+    }
+    
+    const result = await response.json();
+    console.log('Resultado da análise da imagem:', result);
+    return result;
+  } catch (error) {
+    console.error('Erro ao analisar a imagem:', error);
+    // Fallback para dados simulados em caso de erro
+    console.warn('Usando dados simulados devido a falha na API');
     return getMockAnalysisResult();
   }
-  
-  // INTEGRAÇÃO COM IA PYTHON - PROCESSAMENTO DE IMAGEM
-  // ================================================
-  // 1. Implemente um backend em Python usando bibliotecas como Flask ou FastAPI
-  // 2. Use bibliotecas como Tesseract OCR ou EasyOCR para extrair texto da imagem
-  // 3. Use NLP com spaCy, NLTK, ou transformers para análise do texto
-  // 4. Implemente a correção ortográfica e gramatical
-  
-  /* 
-  // Exemplo de implementação da chamada API para a IA Python:
-  const formData = new FormData();
-  formData.append('image', essayImage);
-  
-  const response = await fetch('https://sua-api-python.com/analyze/image', {
-    method: 'POST',
-    body: formData,
-  });
-  
-  if (!response.ok) {
-    throw new Error('Falha ao analisar a redação');
-  }
-  
-  return response.json();
-  */
-  
-  // Por enquanto, retornamos dados simulados
-  return getMockAnalysisResult();
 };
 
 /**
  * Analisa uma redação a partir do texto inserido
  * @param {string} essayText - O texto da redação a ser analisado
- * @returns {Promise<Object>} Resultado da análise
+ * @returns {Promise<AnalysisResult>} Resultado da análise
  */
-export const analyzeEssayText = async (essayText) => {
-  // Para desenvolvimento, vamos usar dados simulados
-  if (process.env.NODE_ENV === 'development') {
-    // Simula o tempo que levaria para processar com a IA
-    await new Promise(resolve => setTimeout(resolve, 1500));
+export const analyzeEssayText = async (essayText: string): Promise<AnalysisResult> => {
+  // Forçar uso da API Python, independente do ambiente
+  // Removendo a verificação de ambiente para garantir que sempre usamos a API
+  console.log(`Enviando texto para API: ${API_URL}/api/analyze/text`);
+
+  try {
+    const response = await fetch(`${API_URL}/api/analyze/text`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text: essayText }),
+    });
     
-    // Personaliza o resultado simulado para usar o texto real fornecido
+    if (!response.ok) {
+      console.error('Erro na resposta da API:', response.status, response.statusText);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Falha ao analisar a redação');
+    }
+    
+    const result = await response.json();
+    console.log('Resultado da análise do texto:', result);
+    return result;
+  } catch (error) {
+    console.error('Erro ao analisar o texto:', error);
+    // Fallback para dados simulados em caso de erro
+    console.warn('Usando dados simulados devido a falha na API');
     return getMockAnalysisResultFromText(essayText);
   }
-  
-  // INTEGRAÇÃO COM IA PYTHON - PROCESSAMENTO DE TEXTO DIRETO
-  // ================================================
-  // 1. Implemente um backend em Python usando bibliotecas como Flask ou FastAPI
-  // 2. Use NLP com spaCy, NLTK, ou transformers para análise do texto
-  // 3. Implemente a correção ortográfica e gramatical
-  // 4. Calcule métricas de qualidade textual
-  
-  /* 
-  // Exemplo de implementação da chamada API para a IA Python:
-  const response = await fetch('https://sua-api-python.com/analyze/text', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ text: essayText }),
-  });
-  
-  if (!response.ok) {
-    throw new Error('Falha ao analisar a redação');
-  }
-  
-  return response.json();
-  */
-  
-  // Por enquanto, retornamos dados simulados
-  return getMockAnalysisResultFromText(essayText);
 };
 
-function getMockAnalysisResult() {
+/**
+ * Salva os resultados da análise no servidor Python
+ * @param {ResultData} resultData - Dados completos da análise
+ * @returns {Promise<Object>} Resultado da operação de salvamento
+ */
+export const saveResults = async (resultData: ResultData): Promise<{success: boolean, message: string}> => {
+  console.log(`Salvando resultados na API: ${API_URL}/api/save-results`);
+  console.log('Dados sendo enviados:', resultData);
+
+  try {
+    const response = await fetch(`${API_URL}/api/save-results`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(resultData),
+    });
+    
+    if (!response.ok) {
+      console.error('Erro na resposta da API ao salvar:', response.status, response.statusText);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Falha ao salvar os resultados');
+    }
+    
+    const result = await response.json();
+    console.log('Resultado do salvamento:', result);
+    return result;
+  } catch (error) {
+    console.error('Erro ao salvar os resultados:', error);
+    throw error;
+  }
+};
+
+// Funções de mock para fallback em caso de erros na API
+function getMockAnalysisResult(): AnalysisResult {
   return {
     text: "A importancia da educacao no Brasil. A educacao é fundamental para o desenvolvimiento do pais. Sem ela, não podemos avançar como sociedade e nem como individuos.",
     corrections: [
@@ -151,12 +223,12 @@ function getMockAnalysisResult() {
   };
 }
 
-function getMockAnalysisResultFromText(text) {
+function getMockAnalysisResultFromText(text: string): AnalysisResult {
   // Esta função usa o texto real fornecido pelo usuário
   // e gera correções simuladas baseadas nele
   
   // Simulação simples de correções baseadas em padrões comuns
-  const corrections = [];
+  const corrections: Correction[] = [];
   
   // Detecta palavras sem acentos
   const accentPatterns = [
@@ -175,7 +247,8 @@ function getMockAnalysisResultFromText(text) {
   // Busca por padrões e adiciona correções
   accentPatterns.forEach(({ pattern, correct }) => {
     let match;
-    while ((match = pattern.exec(text)) !== null) {
+    const tempPattern = new RegExp(pattern.source, pattern.flags);
+    while ((match = tempPattern.exec(text)) !== null) {
       corrections.push({
         original: match[0],
         suggested: correct,

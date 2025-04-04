@@ -9,27 +9,25 @@ import Layout from '../components/Layout';
 import { analyzeEssay, analyzeEssayText } from '../services/aiService';
 
 const UploadPage = () => {
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [essayText, setEssayText] = useState('');
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
-  // ... keep existing code (file handling functions)
-
-  const handleDragOver = (e) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(true);
   };
 
-  const handleDragLeave = (e) => {
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
     
@@ -97,12 +95,12 @@ const UploadPage = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     handleFile(selectedFile);
   };
 
-  const handleFile = (selectedFile) => {
+  const handleFile = (selectedFile?: File) => {
     if (!selectedFile) return;
     
     // Check if the file is an image
@@ -116,7 +114,7 @@ const UploadPage = () => {
     // Create preview
     const reader = new FileReader();
     reader.onload = () => {
-      setPreview(reader.result);
+      setPreview(reader.result as string);
     };
     reader.readAsDataURL(selectedFile);
   };
