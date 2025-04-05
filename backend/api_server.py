@@ -13,7 +13,7 @@ import time
 sys.path.append(os.path.join(os.path.dirname(__file__), 'IA'))
 
 # Importar funções do arquivo main.py
-from main import (
+from ia.main import (
     analyze_text, 
     get_language_tool_corrections,
     process_file, 
