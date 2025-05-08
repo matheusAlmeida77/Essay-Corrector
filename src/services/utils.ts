@@ -1,7 +1,3 @@
-
-/**
- * Lista de conectivos comuns em português para detectar no texto
- */
 const CONNECTIVES = [
   // Aditivos
   'além disso', 'ademais', 'também', 'além do mais', 'ainda', 'e',
@@ -99,11 +95,6 @@ const REPERTORIO_KEYWORDS = [
   'agenda 2030', 'constituição de 1988', 'carta magna', 'pnud', 'ocde'
 ];
 
-/**
- * Conta o número de conectivos no texto
- * @param text Texto para análise
- * @returns O número de conectivos encontrados
- */
 export const countConnectives = (text: string): number => {
   if (!text) return 0;
   
@@ -111,14 +102,12 @@ export const countConnectives = (text: string): number => {
   let count = 0;
   
   for (const connective of CONNECTIVES) {
-    // Tratar expressões compostas
     if (connective.includes('...')) {
       const parts = connective.split('...');
       const regex = new RegExp(`${parts[0]}[^.]*?${parts[1]}`, 'gi');
       const matches = lowerText.match(regex);
       if (matches) count += matches.length;
     } else {
-      // Criar padrão que identifica o conectivo como palavra ou expressão isolada
       const pattern = new RegExp(`\\b${connective.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
       const matches = lowerText.match(pattern);
       if (matches) count += matches.length;
@@ -128,11 +117,6 @@ export const countConnectives = (text: string): number => {
   return count;
 };
 
-/**
- * Detecta a presença de repertório sociocultural no texto
- * @param text Texto para análise
- * @returns Informações sobre repertório sociocultural encontrado
- */
 export const detectSocioculturalRepertoire = (text: string): {
   present: boolean;
   examples: string[];
@@ -144,7 +128,6 @@ export const detectSocioculturalRepertoire = (text: string): {
   const lowerText = text.toLowerCase();
   const foundRepertoire: string[] = [];
   
-  // Detectar palavras-chave de repertório
   REPERTORIO_KEYWORDS.forEach(keyword => {
     if (lowerText.includes(keyword.toLowerCase())) {
       const context = extractContext(lowerText, keyword.toLowerCase());
@@ -152,15 +135,13 @@ export const detectSocioculturalRepertoire = (text: string): {
     }
   });
   
-  // Detectar citações (textos entre aspas)
   const citations = text.match(/"([^"]+)"/g) || [];
   citations.forEach(citation => {
-    if (citation.length > 15) { // Ignorar citações muito curtas
+    if (citation.length > 15) {
       foundRepertoire.push(citation);
     }
   });
   
-  // Avaliar qualidade do repertório
   let quality: 'excellent' | 'good' | 'average' | 'poor' = 'poor';
   if (foundRepertoire.length >= 5) {
     quality = 'excellent';
@@ -170,7 +151,6 @@ export const detectSocioculturalRepertoire = (text: string): {
     quality = 'average';
   }
   
-  // Determinar tipo de repertório predominante
   let type = '';
   if (foundRepertoire.some(r => 
     REPERTORIO_KEYWORDS.slice(0, 16).some(k => r.toLowerCase().includes(k.toLowerCase())))) {
@@ -195,18 +175,12 @@ export const detectSocioculturalRepertoire = (text: string): {
   
   return {
     present: foundRepertoire.length > 0,
-    examples: foundRepertoire.slice(0, 5), // Limitar a 5 exemplos
+    examples: foundRepertoire.slice(0, 5),
     quality,
     type: type.trim() || 'não identificado'
   };
 };
 
-/**
- * Extrai o contexto ao redor de uma palavra-chave
- * @param text Texto completo
- * @param keyword Palavra-chave a ser encontrada
- * @returns Trecho contendo a palavra-chave em contexto
- */
 const extractContext = (text: string, keyword: string): string | null => {
   const index = text.indexOf(keyword);
   if (index === -1) return null;
@@ -217,11 +191,6 @@ const extractContext = (text: string, keyword: string): string | null => {
   return text.substring(start, end).replace(/\s+/g, ' ').trim();
 };
 
-/**
- * Analisa a qualidade da proposta de intervenção
- * @param text Texto da redação
- * @returns Avaliação da proposta de intervenção
- */
 export const analyzeIntervention = (text: string): {
   hasIntervention: boolean;
   hasAgent: boolean;
@@ -243,7 +212,6 @@ export const analyzeIntervention = (text: string): {
     };
   }
   
-  // Dividir em parágrafos e focar no último/penúltimo
   const paragraphs = text.split('\n\n').filter(p => p.trim().length > 0);
   if (paragraphs.length === 0) return {
     hasIntervention: false,
@@ -255,7 +223,6 @@ export const analyzeIntervention = (text: string): {
     detailLevel: 'low'
   };
   
-  // Analisar último parágrafo ou os dois últimos se forem curtos
   let lastParagraphs = '';
   if (paragraphs.length >= 2 && paragraphs[paragraphs.length-1].length < 300) {
     lastParagraphs = paragraphs[paragraphs.length-2] + ' ' + paragraphs[paragraphs.length-1];
@@ -265,7 +232,6 @@ export const analyzeIntervention = (text: string): {
   
   const lowerText = lastParagraphs.toLowerCase();
   
-  // Verificar presença de indicadores de proposta
   const interventionIndicators = [
     'portanto', 'assim', 'logo', 'dessa forma', 'desse modo', 
     'é necessário', 'é preciso', 'deve-se', 'faz-se necessário',
@@ -275,7 +241,6 @@ export const analyzeIntervention = (text: string): {
   const hasIntervention = interventionIndicators.some(indicator => 
     lowerText.includes(indicator));
   
-  // Verificar presença de agentes
   const agentIndicators = [
     'governo', 'estado', 'ministério', 'prefeitura', 'congresso',
     'câmara', 'senado', 'mídia', 'escola', 'universidade', 'família',
@@ -285,7 +250,6 @@ export const analyzeIntervention = (text: string): {
   const hasAgent = agentIndicators.some(agent => 
     new RegExp(`\\b${agent}\\b`, 'i').test(lowerText));
   
-  // Verificar presença de ações
   const actionIndicators = [
     'implementar', 'criar', 'desenvolver', 'promover', 'estabelecer',
     'garantir', 'assegurar', 'incentivar', 'fomentar', 'realizar',
@@ -295,7 +259,6 @@ export const analyzeIntervention = (text: string): {
   const hasAction = actionIndicators.some(action => 
     new RegExp(`\\b${action}\\b`, 'i').test(lowerText));
   
-  // Verificar presença de meios/modos
   const meansIndicators = [
     'por meio de', 'através de', 'mediante', 'a partir de', 'utilizando',
     'com o apoio de', 'com o suporte de', 'em parceria com', 'por intermédio de'
@@ -303,7 +266,6 @@ export const analyzeIntervention = (text: string): {
   
   const hasMeans = meansIndicators.some(means => lowerText.includes(means));
   
-  // Verificar presença de efeitos/finalidade
   const effectIndicators = [
     'a fim de', 'para que', 'com o intuito de', 'visando', 'objetivando',
     'com o objetivo de', 'de modo a', 'para', 'com vistas a', 'no sentido de'
@@ -311,7 +273,6 @@ export const analyzeIntervention = (text: string): {
   
   const hasEffect = effectIndicators.some(effect => lowerText.includes(effect));
   
-  // Verificar respeito aos direitos humanos
   const humanRightsIndicators = [
     'direitos humanos', 'dignidade', 'cidadania', 'direitos fundamentais',
     'respeito', 'igualdade', 'equidade', 'inclusão', 'democracia', 'diversidade'
@@ -319,7 +280,6 @@ export const analyzeIntervention = (text: string): {
   
   const respectsHumanRights = humanRightsIndicators.some(hr => lowerText.includes(hr));
   
-  // Avaliar nível de detalhamento
   let detailLevel: 'high' | 'medium' | 'low' = 'low';
   
   const detailScore = [
