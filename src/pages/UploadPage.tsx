@@ -1,54 +1,54 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import Layout from '../components/Layout';
-import { analyzeEssayText } from '../services/analysisService';
+import Layout from "../components/Layout";
+import { analyzeEssayText } from "../services/analysisService";
 
 const UploadPage = () => {
   const navigate = useNavigate();
-  const [essayText, setEssayText] = useState('');
-  const [theme, setTheme] = useState('');
-  const [title, setTitle] = useState('');
+  const [essayText, setEssayText] = useState("");
+  const [theme, setTheme] = useState("");
+  const [title, setTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const handleUpload = async () => {
     if (!essayText) {
-      toast.error('Por favor, digite o texto da redação.');
+      toast.error("Por favor, digite o texto da redação.");
       return;
     }
-    
+
     if (!theme) {
-      toast.error('Por favor, informe o tema da redação.');
+      toast.error("Por favor, informe o tema da redação.");
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
       const analysisResult = await analyzeEssayText(essayText, theme, title);
-      
-      navigate('/review', { 
-        state: { 
+
+      navigate("/review", {
+        state: {
           essayText,
           analysisResult,
-          inputType: 'text',
+          inputType: "text",
           theme,
-          title
-        } 
+          title,
+        },
       });
     } catch (error) {
-      console.error('Erro ao analisar a redação:', error);
-      toast.error('Erro ao analisar a redação. Tente novamente.');
+      console.error("Erro ao analisar a redação:", error);
+      toast.error("Erro ao analisar a redação. Tente novamente.");
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <Layout>
       <div className="py-12">
@@ -59,7 +59,7 @@ const UploadPage = () => {
               Digite o texto da redação para análise.
             </p>
           </div>
-          
+
           <Card className="border border-gray-200">
             <CardContent className="p-6">
               <div className="space-y-4">
@@ -73,7 +73,7 @@ const UploadPage = () => {
                     onChange={(e) => setTheme(e.target.value)}
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="title">Título da Redação (opcional)</Label>
                   <Input
@@ -84,7 +84,7 @@ const UploadPage = () => {
                     onChange={(e) => setTitle(e.target.value)}
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="essay">Texto da Redação</Label>
                   <Textarea
@@ -95,13 +95,13 @@ const UploadPage = () => {
                     onChange={(e) => setEssayText(e.target.value)}
                   />
                 </div>
-                
-                <Button 
-                  onClick={handleUpload} 
+
+                <Button
+                  onClick={handleUpload}
                   disabled={isLoading}
                   className="w-full sesi-button"
                 >
-                  {isLoading ? 'Analisando...' : 'Analisar Redação'}
+                  {isLoading ? "Analisando..." : "Analisar Redação"}
                 </Button>
               </div>
             </CardContent>

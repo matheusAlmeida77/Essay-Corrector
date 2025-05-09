@@ -1,4 +1,4 @@
-import { ScoreCategories } from "./types";
+import { ScoreCategories } from "../types/types";
 
 export const formatZeroFeedback = (motivo: string): string => {
   let feedback = `# REDAÇÃO COM NOTA ZERO\n\n`;

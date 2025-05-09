@@ -170,7 +170,7 @@ const AboutPage = () => {
             <p className="text-gray-600 mb-6">
               Experimente agora mesmo o Corretor Inteligente de Redações.
             </p>
-            <Link to="/login">
+            <Link to="/auth">
               <Button className="sesi-button px-8 py-6 text-base">
                 Acessar como Professor
               </Button>

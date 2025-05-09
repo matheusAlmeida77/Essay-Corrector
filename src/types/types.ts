@@ -134,13 +134,3 @@ export interface TeacherInput {
   grade: string;
   comments: string;
 }
-
-export interface ResultData {
-  studentInfo: StudentInfo;
-  essayAnalysis: AnalysisResult;
-  teacherInput: TeacherInput;
-  inputType: "image" | "text";
-  timestamp: string;
-  theme: string;
-  title?: string;
-}

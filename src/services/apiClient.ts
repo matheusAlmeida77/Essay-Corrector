@@ -1,25 +1,3 @@
-import axios from "axios";
-
-export const apiClient = axios.create({
-  baseURL: "http://localhost:5000",
-  timeout: 15000,
-  headers: {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  },
-});
-
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error("API Error:", error);
-    if (error.response) {
-      console.error("Resposta de erro do servidor:", error.response.data);
-    }
-    return Promise.reject(error);
-  }
-);
-
 import { QueryClient } from "@tanstack/react-query";
 
 export const queryClient = new QueryClient({
@@ -47,7 +25,13 @@ export class ApiError extends Error {
 const API_BASE_URL =
   import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
+const AI_BASE_URL = import.meta.env.VITE_AI_URL || "http://localhost:5000/ai";
+
 export const API_ENDPOINTS = {
+  aiRoot: `${AI_BASE_URL}`,
+  aiAnalyzeText: `${AI_BASE_URL}/analyze/text`,
+  students: `${API_BASE_URL}/student`,
+  student: (id: string) => `${API_BASE_URL}/student/${id}`,
   users: `${API_BASE_URL}/user`,
   user: (id: string) => `${API_BASE_URL}/user/${id}`,
   userLogin: `${API_BASE_URL}/auth/login`,
@@ -56,6 +40,10 @@ export const API_ENDPOINTS = {
   essayById: (id: string) => `${API_BASE_URL}/essay/${id}`,
   essayByTargetId: (targetId: string) =>
     `${API_BASE_URL}/essay/target/${targetId}`,
+  grades: `${API_BASE_URL}/grade`,
+  gradeById: (id: string) => `${API_BASE_URL}/grade/${id}`,
+  gradeByTargetId: (targetId: string) =>
+    `${API_BASE_URL}/grade/target/${targetId}`,
 };
 
 const DEFAULT_HEADERS = {
@@ -135,8 +123,32 @@ const invalidateQueries = (queryKey: string | string[], id?: string) => {
 };
 
 export const api = {
-  getAll: async (entityType: "user" | "admin") => {
-    const url = API_ENDPOINTS.users;
+  getAi: async () => {
+    try {
+      const response = await apiFetch(API_ENDPOINTS.aiRoot);
+      return response;
+    } catch (error) {
+      console.error("Error calling AI (GET):", error);
+      throw error;
+    }
+  },
+
+  postAi: async (text: string, theme: string, title?: string) => {
+    try {
+      const response = await apiFetch(API_ENDPOINTS.aiAnalyzeText, {
+        method: "POST",
+        body: JSON.stringify({ text, theme, title }),
+      });
+      return response;
+    } catch (error) {
+      console.error("Error calling AI (POST):", error);
+      throw error;
+    }
+  },
+
+  getAll: async (entityType: "student" | "user") => {
+    const url =
+      entityType === "student" ? API_ENDPOINTS.students : API_ENDPOINTS.users;
 
     try {
       const response = await apiFetch(url);
@@ -154,13 +166,16 @@ export const api = {
     }
   },
 
-  getById: async (entityType: "user" | "employee" | "user", id: string) => {
+  getById: async (entityType: "student" | "user", id: string) => {
     try {
       if (!id) {
         throw new Error("Invalid ID format");
       }
 
-      const url = API_ENDPOINTS.user(id);
+      const url =
+        entityType === "student"
+          ? API_ENDPOINTS.student(id)
+          : API_ENDPOINTS.user(id);
 
       const response = await apiFetch(url);
       const item = response[entityType] || response;
@@ -176,8 +191,9 @@ export const api = {
     }
   },
 
-  create: async (entityType: "user" | "admin", data: any) => {
-    const url = API_ENDPOINTS.users;
+  create: async (entityType: "student" | "user", data: any) => {
+    const url =
+      entityType === "student" ? API_ENDPOINTS.students : API_ENDPOINTS.users;
     try {
       const response = await apiFetch(url, {
         method: "POST",
@@ -194,13 +210,16 @@ export const api = {
     }
   },
 
-  update: async (entityType: "user" | "admin", id: string, updates: any) => {
+  update: async (entityType: "student" | "user", id: string, updates: any) => {
     try {
       if (!id) {
         throw new Error("Invalid ID format");
       }
 
-      const url = API_ENDPOINTS.user(id);
+      const url =
+        entityType === "student"
+          ? API_ENDPOINTS.student(id)
+          : API_ENDPOINTS.user(id);
 
       const response = await apiFetch(url, {
         method: "PUT",
@@ -218,13 +237,16 @@ export const api = {
     }
   },
 
-  delete: async (entityType: "user" | "employee" | "user", id: string) => {
+  delete: async (entityType: "student" | "user", id: string) => {
     try {
       if (!id) {
         throw new Error("Invalid ID format");
       }
 
-      const url = API_ENDPOINTS.user(id);
+      const url =
+        entityType === "student"
+          ? API_ENDPOINTS.student(id)
+          : API_ENDPOINTS.user(id);
 
       await apiFetch(url, { method: "DELETE" });
 
@@ -238,13 +260,13 @@ export const api = {
     }
   },
 
-  getHistorical: async () => {
+  getEssays: async () => {
     const url = API_ENDPOINTS.essays;
     try {
       const response = await apiFetch(url);
       return response;
     } catch (error) {
-      console.error(`Error fetching historical:`, error);
+      console.error(`Error fetching essays:`, error);
       throw error;
     }
   },
@@ -279,7 +301,13 @@ export const api = {
     }
   },
 
-  createEssay: async (entry: { description: string; targetId: string }) => {
+  createEssay: async (entry: {
+    title?: string;
+    theme: string;
+    content: string;
+    feedback?: string;
+    studentId: string;
+  }) => {
     try {
       const url = API_ENDPOINTS.essays;
       const response = await apiFetch(url, {
@@ -321,7 +349,7 @@ export const api = {
     }
   },
 
-  deletEessay: async (id: string) => {
+  deleteEssay: async (id: string) => {
     try {
       if (!id) throw new Error("Invalid ID format");
 
@@ -336,6 +364,113 @@ export const api = {
       return response;
     } catch (error) {
       console.error(`Error deleting essay with ID ${id}:`, error);
+      throw error;
+    }
+  },
+
+  getGrades: async () => {
+    const url = API_ENDPOINTS.grades;
+    try {
+      const response = await apiFetch(url);
+      return response;
+    } catch (error) {
+      console.error(`Error fetching grades:`, error);
+      throw error;
+    }
+  },
+
+  getGradeById: async (id: string) => {
+    try {
+      if (!id) {
+        throw new Error("Invalid ID format");
+      }
+
+      const url = API_ENDPOINTS.gradeById(id);
+
+      const response = await apiFetch(url);
+
+      return response;
+    } catch (error) {
+      console.error(`Error fetching grade with ID ${id}:`, error);
+      throw error;
+    }
+  },
+
+  getGradeByTargetId: async (targetId: string) => {
+    try {
+      if (!targetId) throw new Error("Invalid target ID");
+
+      const url = API_ENDPOINTS.gradeByTargetId(targetId);
+      const response = await apiFetch(url);
+      return response;
+    } catch (error) {
+      console.error(`Error fetching grade for target ${targetId}:`, error);
+      throw error;
+    }
+  },
+
+  createGrade: async (entry: {
+    overallScore: number;
+    criteria: object;
+    teacherId: string;
+    essayId: string;
+  }) => {
+    try {
+      const url = API_ENDPOINTS.grades;
+      const response = await apiFetch(url, {
+        method: "POST",
+        body: JSON.stringify(entry),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      return response;
+    } catch (error) {
+      console.error("Error creating essay:", error);
+      throw error;
+    }
+  },
+
+  updateGrade: async (id: string, updates: any) => {
+    try {
+      if (!id) {
+        throw new Error("Invalid ID format");
+      }
+
+      const url = API_ENDPOINTS.gradeById(id);
+
+      const response = await apiFetch(url, {
+        method: "PUT",
+        body: JSON.stringify(updates),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      invalidateQueries(id);
+
+      return response;
+    } catch (error) {
+      console.error(`Error updating grade for user with ID ${id}:`, error);
+      throw error;
+    }
+  },
+
+  deleteGrade: async (id: string) => {
+    try {
+      if (!id) throw new Error("Invalid ID format");
+
+      const url = API_ENDPOINTS.gradeById(id);
+
+      const response = await apiFetch(url, {
+        method: "DELETE",
+      });
+
+      invalidateQueries(id);
+
+      return response;
+    } catch (error) {
+      console.error(`Error deleting grade with ID ${id}:`, error);
       throw error;
     }
   },

@@ -10,7 +10,7 @@ export type {
   ErrorSeverity,
   ArgumentAnalysis,
   EvaluationChecklist,
-} from "./types";
+} from "../types/types";
 
 export { analyzeEssayText, saveResults } from "./analysisService";
 
