@@ -32,6 +32,5 @@ export interface Essay {
 export interface Grade {
   overallScore: number;
   criteria: object;
-  teacherId: string;
   essayId: string;
 }

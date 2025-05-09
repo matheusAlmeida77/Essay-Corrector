@@ -80,7 +80,6 @@ export const gradeService = {
   create: (entry: {
     overallScore: number;
     criteria: object;
-    teacherId: string;
     essayId: string;
   }) => api.createGrade(entry),
   update: (
@@ -88,7 +87,6 @@ export const gradeService = {
     updates: {
       overallScore: number;
       criteria: object;
-      teacherId: string;
       essayId: string;
     }
   ) => api.updateGrade(id, updates),

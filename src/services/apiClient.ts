@@ -412,7 +412,6 @@ export const api = {
   createGrade: async (entry: {
     overallScore: number;
     criteria: object;
-    teacherId: string;
     essayId: string;
   }) => {
     try {
