@@ -69,7 +69,7 @@ const HeroSection = () => {
                            : "opacity-0 translate-y-10"
                        }`}
           >
-            <Link to="/login">
+            <Link to="/auth">
               <Button className="sesi-button px-8 py-6 text-base">
                 Área do Professor
               </Button>
@@ -321,7 +321,7 @@ const CTASection = () => {
           Junte-se aos professores que já estão otimizando seu processo de
           correção de redações com nossa ferramenta inteligente.
         </p>
-        <Link to="/login">
+        <Link to="/auth">
           <Button
             className="bg-white text-sesi-red hover:bg-gray-100 font-medium rounded-md px-8 py-6 text-base
                        transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg

@@ -1,9 +1,3 @@
-
-/**
- * Arquivo principal para exportar todas as funcionalidades relacionadas à análise de redações
- */
-
-// Exportar tipos
 export type {
   AnalysisResult,
   Correction,
@@ -15,23 +9,11 @@ export type {
   GrammarErrorType,
   ErrorSeverity,
   ArgumentAnalysis,
-  EvaluationChecklist
-} from './types';
+  EvaluationChecklist,
+} from "./types";
 
-// Exportar funções de análise
-export {
-  analyzeEssay,
-  analyzeEssayText,
-  saveResults,
-} from './analysisService';
+export { analyzeEssayText, saveResults } from "./analysisService";
 
-// Exportar utilitários
-export {
-  countConnectives,
-} from './utils';
+export { countConnectives } from "./utils";
 
-// Exportar funções de formatação
-export {
-  formatFeedback,
-  formatZeroFeedback,
-} from './formatFeedback';
+export { formatFeedback, formatZeroFeedback } from "./formatFeedback";
