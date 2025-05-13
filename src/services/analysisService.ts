@@ -1,5 +1,5 @@
 import { aiService } from "./api";
-import { AnalysisResult, StudentInfo, TeacherInput } from "../types/types";
+import { AnalysisResult } from "../types/types";
 
 export const analyzeEssayText = async (
   text: string,
@@ -11,6 +11,6 @@ export const analyzeEssayText = async (
 
     return response;
   } catch (error) {
-    console.error("Erro ao corrigir redação:", error);
+    console.error("Error correcting essay:", error);
   }
 };

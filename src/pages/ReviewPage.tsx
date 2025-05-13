@@ -26,7 +26,6 @@ import Layout from "../components/Layout";
 import ThemeField from "../components/ThemeField";
 import TitleField from "../components/TitleField";
 import HighlightedText from "../components/HighlightedText";
-import { saveResults, ResultData } from "../services/aiService";
 import GrammarErrorDetails from "../components/GrammarErrorDetails";
 import ArgumentAnalysisDetails from "../components/ArgumentAnalysisDetails";
 import EvaluationChecklist from "../components/EvaluationChecklist";
@@ -149,6 +148,8 @@ const ReviewPage = () => {
         feedback,
       };
 
+      console.log(resultData);
+
       const result = await essayService.create(resultData);
 
       console.log(result.newEntry._id);
@@ -157,7 +158,7 @@ const ReviewPage = () => {
         const essayId = result.newEntry._id;
 
         const gradeData: Grade = {
-          overallScore: analysisResult.score.total || 0,
+          overallScore: analysisResult.score.total || grade,
           criteria: {
             argumentation: analysisResult.score.categories.competencia1 || 0,
             coherence: analysisResult.score.categories.competencia2 || 0,
@@ -195,22 +196,23 @@ const ReviewPage = () => {
 
   const mockGrammarErrorCounts = {
     spelling:
-      analysisResult.corrections.filter((c) => c.type === "spelling").length ||
+      analysisResult.corrections?.filter((c) => c.type === "spelling").length ||
       2,
     grammar:
-      analysisResult.corrections.filter((c) => c.type === "grammar").length ||
+      analysisResult.corrections?.filter((c) => c.type === "grammar").length ||
       1,
     punctuation:
-      analysisResult.corrections.filter((c) => c.type === "punctuation")
+      analysisResult.corrections?.filter((c) => c.type === "punctuation")
         .length || 3,
     agreement:
-      analysisResult.corrections.filter((c) => c.type === "agreement").length ||
-      0,
+      analysisResult.corrections?.filter((c) => c.type === "agreement")
+        .length || 0,
     syntax:
-      analysisResult.corrections.filter((c) => c.type === "syntax").length || 1,
+      analysisResult.corrections?.filter((c) => c.type === "syntax").length ||
+      1,
     formality:
-      analysisResult.corrections.filter((c) => c.type === "formality").length ||
-      0,
+      analysisResult.corrections?.filter((c) => c.type === "formality")
+        .length || 0,
   };
 
   const mockChecklist = {
@@ -296,14 +298,10 @@ const ReviewPage = () => {
                         <h3 className="text-xl font-bold text-red-600 mb-2">
                           REDAÇÃO COM NOTA ZERO
                         </h3>
-                        <p className="font-medium text-red-700">
-                          Motivo: {analysisResult.zeroReason}
-                        </p>
                         <p className="mt-2 text-sm">
                           De acordo com os critérios do ENEM, esta redação
-                          recebeu nota zero pelo motivo indicado acima. Para
-                          mais informações, consulte as orientações sobre os
-                          critérios de avaliação do ENEM.
+                          recebeu nota zero. Para mais informações, consulte as
+                          orientações sobre os critérios de avaliação do ENEM.
                         </p>
                       </div>
                     </div>
