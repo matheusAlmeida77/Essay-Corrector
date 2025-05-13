@@ -155,8 +155,8 @@ const AboutPage = () => {
                   Alunos Desenvolvedores
                 </h3>
                 <p className="text-gray-700">
-                  <span className="font-medium">Nome:</span> Murilo Moreno e
-                  Rafael Prudencio
+                  <span className="font-medium">Nome:</span> Matheus Almeida,
+                  Murilo Moreno e Rafael Prudencio
                   <br />
                   <span className="font-medium">Orientação:</span> Professor
                   Tiago Henrique B. da Silva

@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,90 +18,55 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Layout from "../components/Layout";
+import { useStudents } from "@/hooks/useStudents";
+import { useEssays } from "@/hooks/useEssays";
+import { useGrades } from "@/hooks/useGrades";
+import { Button } from "@/components/ui/button";
+import { Student } from "@/types/entities";
+import { studentService } from "@/services/api";
 
 const ResultsPage = () => {
-  const [selectedClass, setSelectedClass] = useState<string>("all");
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedClass, setSelectedClass] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedStudentEssays, setSelectedStudentEssays] = useState([]);
+  const [expandedIndexes, setExpandedIndexes] = useState([]);
 
-  const classes = ["2º Ano A", "2º Ano B", "3º Ano A", "3º Ano B"];
+  const classes = ["3º Ano A", "3º Ano B", "3º Ano C", "3º Ano D", "3º Ano E"];
 
-  const mockResults = [
-    {
-      id: 1,
-      name: "Ana Clara Silva",
-      class: "2º Ano A",
-      number: "01",
-      date: "12/05/2023",
-      grade: "8.5",
-      comments:
-        "Boa estrutura de texto, precisa trabalhar concordância verbal.",
-    },
-    {
-      id: 2,
-      name: "Bruno Oliveira",
-      class: "2º Ano A",
-      number: "03",
-      date: "12/05/2023",
-      grade: "9.0",
-      comments: "Excelente redação, poucos erros ortográficos.",
-    },
-    {
-      id: 3,
-      name: "Carla Mendes",
-      class: "2º Ano B",
-      number: "05",
-      date: "13/05/2023",
-      grade: "7.5",
-      comments: "Precisa melhorar a conclusão do texto.",
-    },
-    {
-      id: 4,
-      name: "Daniel Santos",
-      class: "2º Ano B",
-      number: "08",
-      date: "13/05/2023",
-      grade: "6.5",
-      comments: "Muitos erros de ortografia, argumentação confusa.",
-    },
-    {
-      id: 5,
-      name: "Elena Martins",
-      class: "3º Ano A",
-      number: "02",
-      date: "14/05/2023",
-      grade: "9.5",
-      comments: "Redação exemplar, ótimos argumentos.",
-    },
-    {
-      id: 6,
-      name: "Felipe Costa",
-      class: "3º Ano A",
-      number: "07",
-      date: "14/05/2023",
-      grade: "8.0",
-      comments: "Bom desenvolvimento, precisa melhorar introdução.",
-    },
-    {
-      id: 7,
-      name: "Gabriela Lima",
-      class: "3º Ano B",
-      number: "04",
-      date: "15/05/2023",
-      grade: "7.0",
-      comments: "Argumentos pouco desenvolvidos.",
-    },
-    {
-      id: 8,
-      name: "Henrique Alves",
-      class: "3º Ano B",
-      number: "09",
-      date: "15/05/2023",
-      grade: "8.5",
-      comments: "Boa coesão textual, poucos erros.",
-    },
-  ];
+  const { data: students = [], isLoading: loadingStudents } = useStudents();
+  const { data: essays = [], isLoading: loadingEssays } = useEssays();
+  const { data: grades = [], isLoading: loadingGrades } = useGrades();
 
-  const filteredResults = mockResults.filter((result) => {
+  const enrichedResults = useMemo(() => {
+    return students.map((student) => {
+      const studentEssays = essays.filter(
+        (essay) => essay.studentId === student._id
+      );
+      const latestEssay = studentEssays.sort(
+        (a, b) =>
+          new Date(b.correctedAt).getTime() - new Date(a.correctedAt).getTime()
+      )[0];
+
+      const grade = latestEssay
+        ? grades.find((g) => g.essayId === latestEssay._id)
+        : null;
+
+      return {
+        id: student._id,
+        name: student.name,
+        class: student.class,
+        number: student.number.toString().padStart(2, "0"),
+        date: latestEssay?.correctedAt
+          ? new Date(latestEssay.correctedAt).toLocaleDateString("pt-BR")
+          : "—",
+        grade: grade?.overallScore ? grade.overallScore : "—",
+        comments: latestEssay?.feedback || "—",
+      };
+    });
+  }, [students, essays, grades]);
+
+  const filteredResults = enrichedResults.filter((result) => {
     const matchesClass =
       selectedClass === "all" || result.class === selectedClass;
     const matchesSearch =
@@ -111,19 +75,56 @@ const ResultsPage = () => {
     return matchesClass && matchesSearch;
   });
 
-  const classAverages = classes.map((className) => {
-    const classResults = mockResults.filter(
-      (result) => result.class === className
-    );
-    const average =
-      classResults.reduce((sum, result) => sum + parseFloat(result.grade), 0) /
-      classResults.length;
-    return { class: className, average: average.toFixed(1) };
-  });
+  const classAverages = useMemo(() => {
+    return classes.map((className) => {
+      const classResults = enrichedResults.filter(
+        (r) => r.class === className && !isNaN(Number(r.grade))
+      );
+      const average =
+        classResults.reduce((sum, r) => sum + parseFloat(r.grade), 0) /
+        (classResults.length || 1);
+      return { class: className, average: average.toFixed(1) };
+    });
+  }, [enrichedResults]);
 
-  const handleExportToExcel = () => {
-    alert("Erro");
+  const openModal = (studentId) => {
+    const studentEssays = essays
+      .filter((essay) => essay.studentId === studentId)
+      .map((essay) => {
+        const grade = grades.find((g) => g.essayId === essay._id);
+        return {
+          title: essay.title || "Redação",
+          correctedAt: essay.correctedAt,
+          feedback: essay.feedback,
+          grade: grade?.overallScore ?? "—",
+          content: essay.content || "Redação indisponível.",
+        };
+      });
+    setSelectedStudentEssays(studentEssays);
+    setModalOpen(true);
   };
+
+  const toggleDropdown = (index) => {
+    setExpandedIndexes((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+    );
+  };
+
+  // const handleSave = async () => {
+  //   try {
+  //       const newStudent: Student = {
+  //         userId,
+  //         name,
+  //         class,
+  //         number,
+  //       };
+
+  //       const result = await studentService.create(newStudent);
+  //       console.log(result);
+  //     } catch (error) {
+  //       console.error("Erro ao salvar:", error);
+  //   };
+  // }
 
   return (
     <Layout>
@@ -132,11 +133,11 @@ const ResultsPage = () => {
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Resultados das Redações</h1>
             <p className="text-gray-600">
-              Visualize, filtre e exporte os resultados das correções.
+              Visualize e filtre os resultados das correções.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
             {classAverages.map((item, index) => (
               <Card key={index} className="hover-scale">
                 <CardContent className="p-6 text-center">
@@ -185,14 +186,6 @@ const ResultsPage = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="w-full md:w-auto flex items-end">
-                  <Button
-                    onClick={handleExportToExcel}
-                    className="w-full md:w-auto bg-green-600 hover:bg-green-700"
-                  >
-                    Exportar para Excel
-                  </Button>
-                </div>
               </div>
 
               <div className="rounded-md border">
@@ -202,11 +195,6 @@ const ResultsPage = () => {
                       <TableHead>Nome</TableHead>
                       <TableHead>Turma</TableHead>
                       <TableHead>Número</TableHead>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Nota</TableHead>
-                      <TableHead className="hidden md:table-cell">
-                        Comentários
-                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -218,14 +206,13 @@ const ResultsPage = () => {
                           </TableCell>
                           <TableCell>{result.class}</TableCell>
                           <TableCell>{result.number}</TableCell>
-                          <TableCell>{result.date}</TableCell>
-                          <TableCell className="font-bold">
-                            {result.grade}
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            <div className="max-w-xs truncate">
-                              {result.comments}
-                            </div>
+                          <TableCell colSpan={2}>
+                            <Button
+                              className="sesi-button-outline"
+                              onClick={() => openModal(result.id)}
+                            >
+                              Ver detalhes
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))
@@ -243,6 +230,55 @@ const ResultsPage = () => {
           </Card>
         </div>
       </div>
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 overflow-y-auto max-h-[80vh]">
+            <h2 className="text-xl font-bold mb-4">Redações do Estudante</h2>
+            <ul className="space-y-4">
+              {selectedStudentEssays.length > 0 ? (
+                selectedStudentEssays.map((essay, index) => (
+                  <li key={index} className="border p-4 rounded-md">
+                    <div className="text-sm text-gray-500 mb-1">
+                      {new Date(essay.correctedAt).toLocaleDateString("pt-BR")}
+                    </div>
+                    <div className="text-base font-semibold mb-1">
+                      {essay.title}
+                    </div>
+                    <div className="mb-1">
+                      <span className="font-medium">Nota:</span> {essay.grade}
+                    </div>
+                    <div>
+                      <span className="font-medium">Feedback:</span>{" "}
+                      {essay.feedback || "—"}
+                    </div>
+                    <button
+                      className="text-sm text-sesi-red underline hover:opacity-80"
+                      onClick={() => toggleDropdown(index)}
+                    >
+                      {expandedIndexes.includes(index)
+                        ? "Ocultar Redação"
+                        : "Ver Redação Completa"}
+                    </button>
+                    {expandedIndexes.includes(index) && (
+                      <div className="mt-3 p-3 border rounded bg-gray-50 whitespace-pre-wrap text-sm text-gray-800">
+                        {essay.content}
+                      </div>
+                    )}
+                  </li>
+                ))
+              ) : (
+                <p>Este aluno ainda não possui redações corrigidas.</p>
+              )}
+            </ul>
+            <button
+              className="mt-6 bg-sesi-red text-white px-4 py-2 rounded hover:opacity-90"
+              onClick={() => setModalOpen(false)}
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };

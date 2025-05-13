@@ -30,7 +30,7 @@ import GrammarErrorDetails from "../components/GrammarErrorDetails";
 import ArgumentAnalysisDetails from "../components/ArgumentAnalysisDetails";
 import EvaluationChecklist from "../components/EvaluationChecklist";
 import { Combobox, ComboboxOption } from "@/components/ui/Combobox";
-import { Essay, Grade, Student, User } from "@/types/entities";
+import { Essay, Grade, Student } from "@/types/entities";
 import { useStudents } from "@/hooks/useStudents";
 import { essayService, gradeService } from "@/services/api";
 
@@ -148,8 +148,6 @@ const ReviewPage = () => {
         feedback,
       };
 
-      console.log(resultData);
-
       const result = await essayService.create(resultData);
 
       console.log(result.newEntry._id);
@@ -169,14 +167,6 @@ const ReviewPage = () => {
         };
 
         const gradeResult = await gradeService.create(gradeData);
-        console.log("Grade criada com sucesso:", gradeResult);
-      } else {
-        console.error(
-          "Erro ao criar a essay. Não foi possível obter o essayId."
-        );
-      }
-
-      if (result.success) {
         toast.success(result.message || "Resultado salvo com sucesso!");
         navigate("/results");
       } else {

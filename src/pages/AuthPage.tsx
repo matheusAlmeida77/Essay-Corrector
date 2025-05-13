@@ -14,103 +14,9 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import imgHeader from "../assets/logoFooter.webp";
 
 const AuthPage = () => {
-  // const [email, setEmail] = useState("");
-  // const [password, setPassword] = useState("");
-  // const [isLoading, setIsLoading] = useState(false);
-  // const navigate = useNavigate();
-  // const location = useLocation();
-  // const { login } = useAuth();
-  // // Extrair o redirecionamento da query string, se existir
-  // const from = new URLSearchParams(location.search).get("from") || "/upload";
-  // const handleLogin = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   if (!email || !password) {
-  //     toast.error("Por favor, preencha todos os campos");
-  //     return;
-  //   }
-  //   setIsLoading(true);
-  //   try {
-  //     await login(email, password);
-  //     toast.success("Login realizado com sucesso!");
-  //     navigate(from);
-  //   } catch (error) {
-  //     toast.error("Erro ao fazer login. Verifique suas credenciais.");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-  // return (
-  //   <Layout>
-  //     <div className="min-h-[80vh] flex items-center justify-center py-12">
-  //       <div className="w-full max-w-md px-4">
-  //         <div className="text-center mb-8">
-  //           <h1 className="text-3xl font-bold mb-2">Área do Professor</h1>
-  //           <p className="text-gray-600">
-  //             Faça login para acessar o sistema de correção de redações.
-  //           </p>
-  //         </div>
-  //         <Card className="border-0 shadow-xl">
-  //           <CardHeader>
-  //             <CardTitle className="text-xl font-semibold">Login</CardTitle>
-  //             <CardDescription>
-  //               Entre com suas credenciais do SESI-SP.
-  //             </CardDescription>
-  //           </CardHeader>
-  //           <CardContent>
-  //             <form onSubmit={handleLogin} className="space-y-4">
-  //               <div className="space-y-2">
-  //                 <Label htmlFor="email">E-mail</Label>
-  //                 <Input
-  //                   id="email"
-  //                   type="email"
-  //                   placeholder="seu.email@sesi-sp.org.br"
-  //                   value={email}
-  //                   onChange={(e) => setEmail(e.target.value)}
-  //                   required
-  //                   className="w-full"
-  //                 />
-  //               </div>
-  //               <div className="space-y-2">
-  //                 <div className="flex items-center justify-between">
-  //                   <Label htmlFor="password">Senha</Label>
-  //                   <a
-  //                     href="#"
-  //                     className="text-xs text-sesi-red hover:underline"
-  //                   >
-  //                     Esqueceu a senha?
-  //                   </a>
-  //                 </div>
-  //                 <Input
-  //                   id="password"
-  //                   type="password"
-  //                   placeholder="••••••••"
-  //                   value={password}
-  //                   onChange={(e) => setPassword(e.target.value)}
-  //                   required
-  //                   className="w-full"
-  //                 />
-  //               </div>
-  //               <Button
-  //                 type="submit"
-  //                 className="w-full sesi-button"
-  //                 disabled={isLoading}
-  //               >
-  //                 {isLoading ? "Entrando..." : "Entrar"}
-  //               </Button>
-  //             </form>
-  //           </CardContent>
-  //           <CardFooter className="flex justify-center border-t pt-6">
-  //             <p className="text-sm text-gray-600">
-  //               Para acesso ao sistema, consulte a coordenação.
-  //             </p>
-  //           </CardFooter>
-  //         </Card>
-  //       </div>
-  //     </div>
-  //   </Layout>
-  // );
   const [activeTab, setActiveTab] = useState<string>("login");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -143,7 +49,7 @@ const AuthPage = () => {
         });
       } else {
         if (!formData.name || formData.name.trim() === "") {
-          throw new Error("Name is required");
+          throw new Error("Nome é obrigatório");
         }
         await signup(
           formData.name,
@@ -161,10 +67,10 @@ const AuthPage = () => {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : "Authentication failed. Please try again.";
+          : "Erro ao entrar. Por favor, tente novamente.";
       setError(errorMessage);
       toast({
-        title: "Authentication failed",
+        title: "Erro ao entrar",
         description: errorMessage,
         variant: "destructive",
       });
@@ -195,13 +101,8 @@ const AuthPage = () => {
     <PageTransition>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-950 dark:to-blue-950 flex flex-col">
         <header className="w-full px-6 pt-6 flex justify-between items-center z-10">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold shadow-lg">
-              P
-            </div>
-            <span className="font-semibold text-xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-400 dark:to-blue-200">
-              SESI SP
-            </span>
+          <Link to="/" className="">
+            <img className="w-64" src={imgHeader} alt="" />
           </Link>
         </header>
 
@@ -221,7 +122,7 @@ const AuthPage = () => {
               >
                 <TabsList className="grid grid-cols-2 w-full">
                   <TabsTrigger value="login">Login</TabsTrigger>
-                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                  <TabsTrigger value="signup">Cadastre-se</TabsTrigger>
                 </TabsList>
 
                 <CardContent className="p-6 pt-8">
@@ -237,14 +138,14 @@ const AuthPage = () => {
                   >
                     <CardTitle className="text-2xl font-bold">
                       {activeTab === "login"
-                        ? "Welcome back"
-                        : "Create your account"}
+                        ? "Bem-vindo de volta"
+                        : "Criar conta"}
                     </CardTitle>
 
                     <CardDescription>
                       {activeTab === "login"
-                        ? "Enter your credentials to access your account"
-                        : "Fill in your details to create a new account"}
+                        ? "Digite suas credenciais para acessar sua conta"
+                        : "Preencha seus dados para criar uma nova conta"}
                     </CardDescription>
 
                     {error && (
@@ -257,7 +158,7 @@ const AuthPage = () => {
                       {activeTab === "signup" && (
                         <div className="space-y-2">
                           <label htmlFor="name" className="text-sm font-medium">
-                            Full Name
+                            Nome Completo
                           </label>
                           <div className="relative">
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -299,7 +200,7 @@ const AuthPage = () => {
                           htmlFor="password"
                           className="text-sm font-medium"
                         >
-                          Password
+                          Senha
                         </label>
                         <div className="relative">
                           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -319,7 +220,7 @@ const AuthPage = () => {
                       {activeTab === "signup" && (
                         <div className="space-y-2">
                           <label htmlFor="role" className="text-sm font-medium">
-                            Role
+                            Função
                           </label>
                           <select
                             id="role"
@@ -347,7 +248,7 @@ const AuthPage = () => {
                           <Loader2 className="h-4 w-4 animate-spin mr-2" />
                         ) : (
                           <>
-                            {activeTab === "login" ? "Login" : "Create Account"}
+                            {activeTab === "login" ? "Login" : "Criar Conta"}
                             <ArrowRight className="ml-2 h-4 w-4" />
                           </>
                         )}
