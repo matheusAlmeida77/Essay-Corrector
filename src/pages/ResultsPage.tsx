@@ -56,7 +56,7 @@ const ResultsPage = () => {
         id: student._id,
         name: student.name,
         class: student.class,
-        number: student.number.toString().padStart(2, "0"),
+        number: student.number,
         date: latestEssay?.correctedAt
           ? new Date(latestEssay.correctedAt).toLocaleDateString("pt-BR")
           : "—",

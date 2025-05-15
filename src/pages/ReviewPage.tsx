@@ -150,8 +150,6 @@ const ReviewPage = () => {
 
       const result = await essayService.create(resultData);
 
-      console.log(result.newEntry._id);
-
       if (result && result.newEntry._id) {
         const essayId = result.newEntry._id;
 
