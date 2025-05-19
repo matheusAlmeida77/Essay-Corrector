@@ -27,22 +27,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/auth" element={<AuthPage />} />
-            <Route
-              path="/upload"
-              element={
-                <PrivateRoute>
-                  <UploadPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/review"
-              element={
-                <PrivateRoute>
-                  <ReviewPage />
-                </PrivateRoute>
-              }
-            />
+            <Route path="/upload" element={<UploadPage />} />
+            <Route path="/review" element={<ReviewPage />} />
             <Route
               path="/results"
               element={

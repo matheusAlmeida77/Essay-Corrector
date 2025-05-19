@@ -22,8 +22,6 @@ import { useStudents } from "@/hooks/useStudents";
 import { useEssays } from "@/hooks/useEssays";
 import { useGrades } from "@/hooks/useGrades";
 import { Button } from "@/components/ui/button";
-import { Student } from "@/types/entities";
-import { studentService } from "@/services/api";
 
 const ResultsPage = () => {
   const [selectedClass, setSelectedClass] = useState("all");
@@ -109,22 +107,6 @@ const ResultsPage = () => {
       prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
     );
   };
-
-  // const handleSave = async () => {
-  //   try {
-  //       const newStudent: Student = {
-  //         userId,
-  //         name,
-  //         class,
-  //         number,
-  //       };
-
-  //       const result = await studentService.create(newStudent);
-  //       console.log(result);
-  //     } catch (error) {
-  //       console.error("Erro ao salvar:", error);
-  //   };
-  // }
 
   return (
     <Layout>
