@@ -22,10 +22,9 @@ export class ApiError extends Error {
   }
 }
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-const AI_BASE_URL = import.meta.env.VITE_AI_URL || "http://localhost:5000/ai";
+const AI_BASE_URL = import.meta.env.VITE_AI_URL;
 
 export const API_ENDPOINTS = {
   aiRoot: `${AI_BASE_URL}`,

@@ -92,17 +92,3 @@ export const gradeService = {
   ) => api.updateGrade(id, updates),
   delete: (id: string) => api.deleteGrade(id),
 };
-
-// export const historyService = {
-//   getAll: () => api.getHistorical(),
-//   getById: (id: string) => api.getHistoryById(id),
-//   getByTargetId: async (targetId: string) => {
-//     const response = await api.getHistoryByTargetId(targetId);
-//     return response.entries;
-//   },
-//   create: (entry: { description: string; targetId: string }) =>
-//     api.createHistory(entry),
-//   update: (id: string, updates: { description: string }) =>
-//     api.updateHistory(id, updates),
-//   delete: (id: string) => api.deleteHistory(id),
-// };
