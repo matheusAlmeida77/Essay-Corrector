@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ import { Combobox, ComboboxOption } from "@/components/ui/Combobox";
 import { Essay, Grade, Student } from "@/types/entities";
 import { useStudents } from "@/hooks/useStudents";
 import { essayService, gradeService } from "@/services/api";
+import { analyzeErros } from "@/services/analyseErrors";
 
 interface LocationState {
   analysisResult: any;
@@ -57,6 +58,15 @@ const ReviewPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const state = location.state as LocationState | undefined;
+
+  const { analysisResult } = state;
+  const [localAnalysisResult, setLocalAnalysisResult] =
+    useState(analysisResult);
+
+  useEffect(() => {
+    const text = analysisResult.text || "Texto inicial de fallback";
+    analyzeErros(text).then(setLocalAnalysisResult);
+  }, []);
 
   const [studentId, setStudentId] = useState("");
   const [grade, setGrade] = useState("");
@@ -94,8 +104,6 @@ const ReviewPage = () => {
       </Layout>
     );
   }
-
-  const { analysisResult } = state;
 
   const prepareChartData = () => {
     if (!analysisResult.score || !analysisResult.score.categories) return [];
@@ -412,7 +420,7 @@ const ReviewPage = () => {
                       <div className="p-4 bg-gray-50 rounded-lg text-sm">
                         <HighlightedText
                           content={analysisResult.text}
-                          corrections={analysisResult.corrections || []}
+                          corrections={localAnalysisResult.corrections}
                         />
                       </div>
                       <div className="mt-2 flex flex-wrap gap-2">

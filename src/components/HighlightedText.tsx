@@ -7,9 +7,6 @@ interface HighlightedTextProps {
   className?: string;
 }
 
-/**
- * Componente que exibe um texto com marcações para correções gramaticais e conectivos
- */
 const HighlightedText: React.FC<HighlightedTextProps> = ({
   content,
   corrections,
@@ -17,30 +14,24 @@ const HighlightedText: React.FC<HighlightedTextProps> = ({
 }) => {
   if (!content) return null;
 
-  // Se não houver correções, apenas renderiza o texto
   if (!corrections || corrections.length === 0) {
     return <div className={`whitespace-pre-wrap ${className}`}>{content}</div>;
   }
 
-  // Ordena as correções por posição de início, do menor para o maior
   const sortedCorrections = [...corrections].sort((a, b) => {
     if (!a.position || !b.position) return 0;
     return a.position.start - b.position.start;
   });
 
-  // Array para armazenar os fragmentos de texto com ou sem destaque
   const textFragments: JSX.Element[] = [];
 
-  // Posição atual no texto
   let currentPosition = 0;
 
-  // Processa cada correção
   sortedCorrections.forEach((correction, index) => {
     if (!correction.position) return;
 
     const { start, end } = correction.position;
 
-    // Adiciona o texto normal antes da correção
     if (start > currentPosition) {
       textFragments.push(
         <span key={`text-${index}`}>
@@ -49,7 +40,6 @@ const HighlightedText: React.FC<HighlightedTextProps> = ({
       );
     }
 
-    // Determina a classe CSS baseada no tipo de correção
     let highlightClass = "";
     let title = "";
 
@@ -78,7 +68,6 @@ const HighlightedText: React.FC<HighlightedTextProps> = ({
         title = "Marcação";
     }
 
-    // Adiciona o texto com destaque
     textFragments.push(
       <span
         key={`correction-${index}`}
@@ -89,11 +78,9 @@ const HighlightedText: React.FC<HighlightedTextProps> = ({
       </span>
     );
 
-    // Atualiza a posição atual
     currentPosition = end;
   });
 
-  // Adiciona o texto restante após a última correção
   if (currentPosition < content.length) {
     textFragments.push(
       <span key="text-end">{content.substring(currentPosition)}</span>
