@@ -162,7 +162,8 @@ const ReviewPage = () => {
         const essayId = result.newEntry._id;
 
         const gradeData: Grade = {
-          overallScore: analysisResult.score.total || grade,
+          overallScore:
+            grade.trim() !== "" ? Number(grade) : analysisResult.score.total,
           criteria: {
             argumentation: analysisResult.score.categories.competencia1 || 0,
             coherence: analysisResult.score.categories.competencia2 || 0,

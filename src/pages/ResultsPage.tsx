@@ -30,7 +30,7 @@ const ResultsPage = () => {
   const [selectedStudentEssays, setSelectedStudentEssays] = useState([]);
   const [expandedIndexes, setExpandedIndexes] = useState([]);
 
-  const classes = ["3º Ano A", "3º Ano B", "3º Ano C", "3º Ano D", "3º Ano E"];
+  const classes = ["3º A", "3º B", "3º C", "3º D", "3º E"];
 
   const { data: students = [], isLoading: loadingStudents } = useStudents();
   const { data: essays = [], isLoading: loadingEssays } = useEssays();
